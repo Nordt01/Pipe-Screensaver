@@ -1,13 +1,13 @@
 using UnityEngine;
 
-public class Grid1
+public class Grid
 {
     private int width, height, depth;
     private float cellSize;
     private Vector3 origin;
-    private bool[,,] occupiedCells;
+    public bool[,,] occupiedCells;
 
-    public Grid1(int width, int height, int depth, float cellSize, Vector3 origin)
+    public Grid(int width, int height, int depth, float cellSize, Vector3 origin)
     {
         this.width = width;
         this.height = height;
@@ -50,7 +50,7 @@ public class Grid1
         return false;
     }
 
-    private bool IsValidGridPosition(Vector3Int gridPosition)
+    public bool IsValidGridPosition(Vector3Int gridPosition)
     {
         return gridPosition.x >= origin.x && gridPosition.x < width &&
                gridPosition.y >= origin.y && gridPosition.y < height &&
