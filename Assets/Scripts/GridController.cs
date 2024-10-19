@@ -18,6 +18,7 @@ public class GridController : MonoBehaviour
     public GameObject spherePrefab; // Assign your sphere prefab here
 
     public List<Vector3Int> path = new List<Vector3Int>();
+    public List<Vector3Int> testpath = new List<Vector3Int>();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -25,6 +26,12 @@ public class GridController : MonoBehaviour
         grid = new Grid(width, height, depth, cellSize, transform.position);
         //CreatePath(new Vector3Int(5, 5, 5));
         CratePipeInstance(new Vector3Int(0, 0, 0), new Vector3Int(0, 0, 9));
+        testpath.Add(new Vector3Int(0, 0, 0));
+        testpath.Add(new Vector3Int(0, 0, 4));
+        testpath.Add(new Vector3Int(0, 0, 6));
+        testpath.Add(new Vector3Int(0, 8, 6));
+        testpath.Add(new Vector3Int(-5, 8, 6));
+        //AddPath(testpath);
     }
 
     // Update is called once per frame
@@ -77,11 +84,15 @@ public class GridController : MonoBehaviour
 
     void AddPath(List<Vector3Int> pathA)
     {
-        Vector3Int prevPoint;
-        foreach (Vector3Int point in pathA)
+        Vector3Int old = pathA[0];
+        for (int i = 0, j = 1, k = 2; k < pathA.Count; i++, j++, k++)
         {
-            //instantiate 
-            prevPoint = point;
+            if (IsCurve(pathA[i], pathA[j], pathA[k]))
+            {
+                CratePipeInstance(old, pathA[j]);
+                CreateSphere(pathA[j]);
+                old = pathA[j];
+            }
         }
     }
 
@@ -93,24 +104,27 @@ public class GridController : MonoBehaviour
         Vector3 midPoint = (start + end) / 2;
         pipe.transform.position = midPoint;
 
+        pipe.transform.LookAt(end);
+
         // Calculate the distance and scale the pipe
         float distance = Vector3.Distance(start, end);
-        pipe.transform.localScale = new Vector3(pipe.transform.localScale.x, distance / 2, pipe.transform.localScale.z); // Assuming the cylinder's pivot is at its base
+        //TODO change that it works
+        pipe.transform.localScale = new Vector3(pipe.transform.localScale.x, distance / 2, pipe.transform.localScale.y); // Assuming the cylinder's pivot is at its base
 
         // Rotate the pipe to face the direction from start to end
-        pipe.transform.LookAt(end);
+      
     }
     void CreateSphere(Vector3 position)
     {
         Instantiate(spherePrefab, position, Quaternion.identity); // Instantiate sphere at the position
     }
 
-    bool IsCurve(Vector3 prev, Vector3 current, Vector3 next)
+    bool IsCurve(Vector3Int prev, Vector3Int current, Vector3Int next)
     {
-        Vector3 direction1 = current - prev;
-        Vector3 direction2 = next - current;
+        Vector3Int direction1 = current - prev;
+        Vector3Int direction2 = next - current;
 
         float angle = Vector3.Angle(direction1, direction2);
-        return angle > 30f; // Adjust this threshold based on your needs
+        return angle > 0f;
     }
 }
