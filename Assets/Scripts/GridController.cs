@@ -14,13 +14,17 @@ public class GridController : MonoBehaviour
 
     private Grid grid;
 
+    public GameObject pipePrefab; // Assign your cylinder prefab here
+    public GameObject spherePrefab; // Assign your sphere prefab here
+
     public List<Vector3Int> path = new List<Vector3Int>();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         grid = new Grid(width, height, depth, cellSize, transform.position);
-        CreatePath(new Vector3Int(5, 5, 5));
+        //CreatePath(new Vector3Int(5, 5, 5));
+        CratePipeInstance(new Vector3Int(0, 0, 0), new Vector3Int(0, 0, 9));
     }
 
     // Update is called once per frame
@@ -69,5 +73,44 @@ public class GridController : MonoBehaviour
         }
 
 
+    }
+
+    void AddPath(List<Vector3Int> pathA)
+    {
+        Vector3Int prevPoint;
+        foreach (Vector3Int point in pathA)
+        {
+            //instantiate 
+            prevPoint = point;
+        }
+    }
+
+    void CratePipeInstance(Vector3Int start, Vector3Int end)
+    {
+        GameObject pipe = Instantiate(pipePrefab);
+
+        // Position the pipe at the midpoint
+        Vector3 midPoint = (start + end) / 2;
+        pipe.transform.position = midPoint;
+
+        // Calculate the distance and scale the pipe
+        float distance = Vector3.Distance(start, end);
+        pipe.transform.localScale = new Vector3(pipe.transform.localScale.x, distance / 2, pipe.transform.localScale.z); // Assuming the cylinder's pivot is at its base
+
+        // Rotate the pipe to face the direction from start to end
+        pipe.transform.LookAt(end);
+    }
+    void CreateSphere(Vector3 position)
+    {
+        Instantiate(spherePrefab, position, Quaternion.identity); // Instantiate sphere at the position
+    }
+
+    bool IsCurve(Vector3 prev, Vector3 current, Vector3 next)
+    {
+        Vector3 direction1 = current - prev;
+        Vector3 direction2 = next - current;
+
+        float angle = Vector3.Angle(direction1, direction2);
+        return angle > 30f; // Adjust this threshold based on your needs
     }
 }
