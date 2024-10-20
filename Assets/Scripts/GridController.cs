@@ -8,8 +8,8 @@ public class GridController : MonoBehaviour
     public int height;
     public int depth;
     public float cellSize = 1f;
-    private int placedPipes = 0;
-    public int maxPipesPlaced = 100;
+    public int placedPipes = 0;
+    public int maxPipesPlaced = 100000;
     private int amountPaths = 0;
     public int maxPaths = 5;
     public float growDuration = 1.0f;
@@ -19,13 +19,15 @@ public class GridController : MonoBehaviour
     public GameObject pipePrefab; // Assign your cylinder prefab here
     public GameObject spherePrefab; // Assign your sphere prefab here
 
-    public List<Vector3Int> path = new List<Vector3Int>();
+    public List<List<Vector3Int>> pathPath = new List<List<Vector3Int>>();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        List<Vector3Int> path = new List<Vector3Int>();
+        pathPath.Add(path);
         grid = new Grid(width, height, depth, cellSize, transform.position);
-        CreatePath(new Vector3Int(5, 5, 5));
+        createPipePath(new Vector3Int(5, 5, 5));
     }
 
     // Update is called once per frame
@@ -34,13 +36,24 @@ public class GridController : MonoBehaviour
         
     }
 
-    //Creates a path by looking which positions are avalible next to the current position and choosing one randomly
-    void CreatePath(Vector3Int pos)
+    void createPipePath(Vector3Int start)
     {
-        //Adds the first position to the path.
-        path.Add(pos);
-        grid.SetCellOccupied(pos, true);
+        Vector3Int pos = start;
+        Debug.Log($"jiii{pos}");
+        while (placedPipes <= maxPipesPlaced && pos != null && grid.IsValidGridPosition(pos)) {
+            //Adds the position to the path.
+            pathPath[pathPath.Count - 1].Add(pos);
+            grid.SetCellOccupied(pos, true);
+            placedPipes++;
 
+            pos = CreatePath(pos);
+        }
+        StartCoroutine(AddPathCoroutine(pathPath[pathPath.Count - 1]));
+        Debug.Log("hi");
+    }
+    //Creates a path by looking which positions are avalible next to the current position and choosing one randomly
+    Vector3Int CreatePath(Vector3Int pos)
+    {
         //List which includes all next possible positions
         List<Vector3Int> availablePossibilities = new List<Vector3Int>();
 
@@ -60,24 +73,17 @@ public class GridController : MonoBehaviour
         {
             //Coordinate next to current Position
             Vector3Int newPos = pos + dir;
-            if (IsWithinBounds(newPos) && !grid.occupiedCells[newPos.x, newPos.y, newPos.z] && grid.IsValidGridPosition(newPos))
+            if (IsWithinBounds(newPos) && !grid.occupiedCells[newPos.x, newPos.y, newPos.z])
             {
                 availablePossibilities.Add(newPos);
             }
         }
-
         //Limits amount of placed Pipes
-        if (placedPipes <= 50 && availablePossibilities.Count > 0)
-        {
-            placedPipes++;
-            //calls function recursiv to add more Pipes
-            CreatePath(availablePossibilities[Random.Range(0, availablePossibilities.Count)]);
+        if (availablePossibilities.Count == 0) {
+            return new Vector3Int();
         }
-        else
-        {
-            //Adds 3D Pipes
-            AddPath(path);
-        }
+        int next = Random.Range(0, availablePossibilities.Count);
+        return availablePossibilities[next];
     }
 
     //Function to see if Coordinate is out of bounds
@@ -88,25 +94,37 @@ public class GridController : MonoBehaviour
                pos.z >= 0 && pos.z < depth;
     }
 
-    //Ads 4D Pipes to World
-    public void AddPath(List<Vector3Int> pathA)
-    {
-        StartCoroutine(AddPathCoroutine(pathA));
-    }
-
     //Loops through Pipe Positions and Positions Pipes and Spheres makes sure pipe is placed after pipe before finished scalling
     IEnumerator AddPathCoroutine(List<Vector3Int> pathA)
     {
+        int i;
+        Debug.Log(pathA);
         //chooses random color for pipe
         Color randomColor = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
 
-        for (int i = 0; i < pathA.Count -1; i++)
+        for (i = 0; i < pathA.Count -1; i++)
         {
             yield return StartCoroutine(ScalePipeOverTime(pathA, pathA[i], pathA[i+1], randomColor));
 
             if (i < pathA.Count - 2 && IsCurve(pathA[i], pathA[i+1], pathA[i+2]))
             {
                 CreateSphere(pathA[i + 1], randomColor);
+            }
+        }
+        Debug.Log("-----------------FERTIG------------------");
+        int x, y, z;
+        i = 0;
+        for (i = 0; i < 3; i++) 
+        { 
+            x = Random.Range(0, width - 1);
+            y = Random.Range(0, height - 1);
+            z = Random.Range(0, depth - 1);
+            if (!grid.IsCellOccupied(new Vector3Int(x, y, z)))
+            {
+                List<Vector3Int> path2 = new List<Vector3Int>();
+                pathPath.Add(path2);
+                createPipePath(new Vector3Int(x, y, z));
+                break;
             }
         }
     }
