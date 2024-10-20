@@ -476,6 +476,7 @@ MonoBehaviour:
   cellSize: 1
   maxPipesPlaced: 100
   maxPaths: 5
+  growDuration: 0.7
   pipePrefab: {fileID: 4780531246135008732, guid: 3311b50ea0c791649bbbc888914ec122, type: 3}
   spherePrefab: {fileID: 5260226236395028540, guid: f07a21f16f0bf244ebaa8d6e504eba78, type: 3}
   path: []

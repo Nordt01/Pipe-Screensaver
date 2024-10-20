@@ -16,23 +16,6 @@ public class Grid
         this.origin = origin;
         occupiedCells = new bool[width, height, depth];
     }
-
-    public Vector3Int WorldToGridPosition(Vector3 worldPosition)
-    {
-        int x = Mathf.FloorToInt((worldPosition.x - origin.x) / cellSize);
-        int y = Mathf.FloorToInt((worldPosition.y - origin.y) / cellSize);
-        int z = Mathf.FloorToInt((worldPosition.z - origin.z) / cellSize);
-        return new Vector3Int(x, y, z);
-    }
-
-    public Vector3 GridToWorldPosition(Vector3Int gridPosition)
-    {
-        float x = gridPosition.x * cellSize + origin.x;
-        float y = gridPosition.y * cellSize + origin.y;
-        float z = gridPosition.z * cellSize + origin.z;
-        return new Vector3(x, y, z);
-    }
-
     public void SetCellOccupied(Vector3Int gridPosition, bool isOccupied)
     {
         if (IsValidGridPosition(gridPosition))
