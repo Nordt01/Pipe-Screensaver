@@ -10,14 +10,16 @@ public class GridController : MonoBehaviour
     public float cellSize = 1f;
     public int placedPipes = 0;
     public int maxPipesPlaced = 100000;
-    private int amountPaths = 0;
-    public int maxPaths = 5;
+    private int pathAmount = 0;
+    public int maxPaths = 2;
     public float growDuration = 1.0f;
+    public float emissionIntensity = 1.0f;
 
     private Grid grid;
 
     public GameObject pipePrefab; // Assign your cylinder prefab here
     public GameObject spherePrefab; // Assign your sphere prefab here
+    public GameObject parent;
 
     public List<List<Vector3Int>> pathPath = new List<List<Vector3Int>>();
 
@@ -30,17 +32,10 @@ public class GridController : MonoBehaviour
         createPipePath(new Vector3Int(5, 5, 5));
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     void createPipePath(Vector3Int start)
     {
         Vector3Int pos = start;
-        Debug.Log($"jiii{pos}");
-        while (placedPipes <= maxPipesPlaced && pos != null && grid.IsValidGridPosition(pos)) {
+        while (placedPipes <= maxPipesPlaced && pos != new Vector3Int() && grid.IsValidGridPosition(pos)) {
             //Adds the position to the path.
             pathPath[pathPath.Count - 1].Add(pos);
             grid.SetCellOccupied(pos, true);
@@ -49,7 +44,6 @@ public class GridController : MonoBehaviour
             pos = CreatePath(pos);
         }
         StartCoroutine(AddPathCoroutine(pathPath[pathPath.Count - 1]));
-        Debug.Log("hi");
     }
     //Creates a path by looking which positions are avalible next to the current position and choosing one randomly
     Vector3Int CreatePath(Vector3Int pos)
@@ -98,7 +92,6 @@ public class GridController : MonoBehaviour
     IEnumerator AddPathCoroutine(List<Vector3Int> pathA)
     {
         int i;
-        Debug.Log(pathA);
         //chooses random color for pipe
         Color randomColor = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
 
@@ -111,7 +104,6 @@ public class GridController : MonoBehaviour
                 CreateSphere(pathA[i + 1], randomColor);
             }
         }
-        Debug.Log("-----------------FERTIG------------------");
         int x, y, z;
         i = 0;
         for (i = 0; i < 3; i++) 
@@ -119,10 +111,22 @@ public class GridController : MonoBehaviour
             x = Random.Range(0, width - 1);
             y = Random.Range(0, height - 1);
             z = Random.Range(0, depth - 1);
-            if (!grid.IsCellOccupied(new Vector3Int(x, y, z)))
+
+            if (!grid.IsCellOccupied(new Vector3Int(x, y, z)) && pathAmount < maxPaths-1)
             {
+                pathAmount++;
                 List<Vector3Int> path2 = new List<Vector3Int>();
                 pathPath.Add(path2);
+                createPipePath(new Vector3Int(x, y, z));
+                break;
+            }
+            else if (pathAmount >= maxPaths - 1) //Neu start
+            {
+                pathAmount = 0;
+                KillChildren();
+                grid.occupiedCells = new bool[width, height, depth];
+                List<Vector3Int> path3 = new List<Vector3Int>();
+                pathPath.Add(path3);
                 createPipePath(new Vector3Int(x, y, z));
                 break;
             }
@@ -133,13 +137,17 @@ public class GridController : MonoBehaviour
     IEnumerator ScalePipeOverTime(List<Vector3Int> pathA, Vector3Int start, Vector3Int end, Color randomColor)
     {
         //Pipe instatiated at start-coordinate and rotated so it looks at end coordinate
-        GameObject pipe = Instantiate(pipePrefab, start, Quaternion.identity);
+        GameObject pipe = Instantiate(pipePrefab, start, Quaternion.identity, parent.transform);
         pipe.transform.LookAt(end);
 
         //change color
         Transform childTransform = pipe.transform.Find("pip");
         Renderer renderer = childTransform.GetComponent<Renderer>();
         renderer.material.color = randomColor;
+        Material material = renderer.material;
+        material.EnableKeyword("_EMISSION");
+        material.SetColor("_EmissionColor", randomColor * emissionIntensity);
+        material.color = randomColor;
 
         float elapsedTime = 0f;
         Vector3 initialScale = pipe.transform.localScale;
@@ -164,9 +172,12 @@ public class GridController : MonoBehaviour
     //Creates a sphere
     void CreateSphere(Vector3 position, Color randomColor)
     {
-        GameObject sph = Instantiate(spherePrefab, position, Quaternion.identity); // Instantiate sphere at the position
+        GameObject sph = Instantiate(spherePrefab, position, Quaternion.identity, parent.transform); // Instantiate sphere at the position
         Renderer renderer = sph.GetComponent<Renderer>();
-        renderer.material.color = randomColor;
+        Material material = renderer.material;
+        material.EnableKeyword("_EMISSION");
+        material.SetColor("_EmissionColor", randomColor * emissionIntensity);
+        material.color = randomColor;
     }
 
     //Uses previous and next Coordinate to determain if current is a curve 
@@ -177,5 +188,13 @@ public class GridController : MonoBehaviour
 
         float angle = Vector3.Angle(direction1, direction2);
         return angle > 0f;
+    }
+
+    void KillChildren()
+    {
+        while (parent.transform.childCount > 0)
+        {
+            DestroyImmediate(parent.transform.GetChild(0).gameObject);
+        }
     }
 }
