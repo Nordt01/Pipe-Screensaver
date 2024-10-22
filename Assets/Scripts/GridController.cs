@@ -7,43 +7,43 @@ public class GridController : MonoBehaviour
     public int width;
     public int height;
     public int depth;
-    public float cellSize = 1f;
-    public int placedPipes = 0;
-    public int maxPipesPlaced = 100000;
     private int pathAmount = 0;
-    public int maxPaths = 2;
-    public float growDuration = 1.0f;
-    public float emissionIntensity = 1.0f;
+    public int maxPaths;
+    public float growDuration;
+    public float emissionIntensity;
 
     private Grid grid;
 
-    public GameObject pipePrefab; // Assign your cylinder prefab here
-    public GameObject spherePrefab; // Assign your sphere prefab here
+    public GameObject pipePrefab;
+    public GameObject spherePrefab;
     public GameObject parent;
 
-    public List<List<Vector3Int>> pathPath = new List<List<Vector3Int>>();
+    public List<List<Vector3Int>> pathPath = new List<List<Vector3Int>>(); // List of path, which saves every path created during runtime
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        grid = new Grid(width, height, depth,  transform.position);
+
         List<Vector3Int> path = new List<Vector3Int>();
         pathPath.Add(path);
-        grid = new Grid(width, height, depth, cellSize, transform.position);
-        createPipePath(new Vector3Int(5, 5, 5));
+
+        createPipePath(new Vector3Int(5, 5, 5)); //Starts path creating and drawing process
     }
 
     void createPipePath(Vector3Int start)
     {
         Vector3Int pos = start;
-        while (placedPipes <= maxPipesPlaced && pos != new Vector3Int() && grid.IsValidGridPosition(pos)) {
-            //Adds the position to the path.
+
+        while (pos != new Vector3Int() && grid.IsValidGridPosition(pos)) {
+            //Adds the position to the latest path in pathPath.
             pathPath[pathPath.Count - 1].Add(pos);
             grid.SetCellOccupied(pos, true);
-            placedPipes++;
 
-            pos = CreatePath(pos);
+            pos = CreatePath(pos); //creates new Position
         }
-        StartCoroutine(AddPathCoroutine(pathPath[pathPath.Count - 1]));
+
+        StartCoroutine(AddPathCoroutine(pathPath[pathPath.Count - 1])); //Starts Process do draw pipes of path
     }
     //Creates a path by looking which positions are avalible next to the current position and choosing one randomly
     Vector3Int CreatePath(Vector3Int pos)
@@ -65,22 +65,24 @@ public class GridController : MonoBehaviour
         //Adds all avaliable Coordinates next tu current to list
         foreach (Vector3Int dir in directions)
         {
-            //Coordinate next to current Position
             Vector3Int newPos = pos + dir;
+
+            //Creates a list of all valid new path positions
             if (IsWithinBounds(newPos) && !grid.occupiedCells[newPos.x, newPos.y, newPos.z])
             {
                 availablePossibilities.Add(newPos);
             }
         }
-        //Limits amount of placed Pipes
+        //Stops if current position is sorounded by pipes
         if (availablePossibilities.Count == 0) {
             return new Vector3Int();
         }
+        //Chooses new random next position from the valid possibilities
         int next = Random.Range(0, availablePossibilities.Count);
         return availablePossibilities[next];
     }
 
-    //Function to see if Coordinate is out of bounds
+    //Function to see if Coordinate is out of bounds (Different from Grid.isValidGridPosition)
     bool IsWithinBounds(Vector3Int pos)
     {
         return pos.x >= 0 && pos.x < width &&
@@ -95,6 +97,7 @@ public class GridController : MonoBehaviour
         //chooses random color for pipe
         Color randomColor = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
 
+        //Loops through Pipe Positions and Positions Pipes and Spheres (when curve is detected)
         for (i = 0; i < pathA.Count -1; i++)
         {
             yield return StartCoroutine(ScalePipeOverTime(pathA, pathA[i], pathA[i+1], randomColor));
@@ -104,27 +107,38 @@ public class GridController : MonoBehaviour
                 CreateSphere(pathA[i + 1], randomColor);
             }
         }
+
+
         int x, y, z;
         i = 0;
         for (i = 0; i < 3; i++) 
         { 
+            //chooses random x,y,z coordinates
             x = Random.Range(0, width - 1);
             y = Random.Range(0, height - 1);
             z = Random.Range(0, depth - 1);
 
+            //checks if valid that new path is created at this position
             if (!grid.IsCellOccupied(new Vector3Int(x, y, z)) && pathAmount < maxPaths-1)
             {
                 pathAmount++;
                 List<Vector3Int> path2 = new List<Vector3Int>();
                 pathPath.Add(path2);
-                createPipePath(new Vector3Int(x, y, z));
+
+                createPipePath(new Vector3Int(x, y, z)); //Creates new path at choosen start point
                 break;
             }
-            else if (pathAmount >= maxPaths - 1) //Neu start
+            //Checks if already to many pathes exists and then clears worldspace and beginns creating pipes from the start again.
+            if (pathAmount >= maxPaths - 1) //Neu start
             {
+                //Reseting varaibles
                 pathAmount = 0;
-                KillChildren();
                 grid.occupiedCells = new bool[width, height, depth];
+
+                //Destroying all children
+                KillChildren();
+
+                //Starting from the beginning with new random spawnpoint
                 List<Vector3Int> path3 = new List<Vector3Int>();
                 pathPath.Add(path3);
                 createPipePath(new Vector3Int(x, y, z));
@@ -140,7 +154,7 @@ public class GridController : MonoBehaviour
         GameObject pipe = Instantiate(pipePrefab, start, Quaternion.identity, parent.transform);
         pipe.transform.LookAt(end);
 
-        //change color
+        //change color and makes pipes slightly glow
         Transform childTransform = pipe.transform.Find("pip");
         Renderer renderer = childTransform.GetComponent<Renderer>();
         renderer.material.color = randomColor;
@@ -165,6 +179,7 @@ public class GridController : MonoBehaviour
             pipe.transform.localScale = new Vector3(initialScale.x, initialScale.y, currentLength);
             yield return null;
         }
+
         // Ensure final scale is exact
         pipe.transform.localScale = new Vector3(initialScale.x, initialScale.y, distance);
     }
@@ -173,6 +188,8 @@ public class GridController : MonoBehaviour
     void CreateSphere(Vector3 position, Color randomColor)
     {
         GameObject sph = Instantiate(spherePrefab, position, Quaternion.identity, parent.transform); // Instantiate sphere at the position
+
+        //Gives color and glow to sphere
         Renderer renderer = sph.GetComponent<Renderer>();
         Material material = renderer.material;
         material.EnableKeyword("_EMISSION");
@@ -190,6 +207,7 @@ public class GridController : MonoBehaviour
         return angle > 0f;
     }
 
+    //Destroys all children objects of an object (needed for clearing pipes)
     void KillChildren()
     {
         while (parent.transform.childCount > 0)

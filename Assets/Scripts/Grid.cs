@@ -7,12 +7,11 @@ public class Grid
     private Vector3 origin;
     public bool[,,] occupiedCells;
 
-    public Grid(int width, int height, int depth, float cellSize, Vector3 origin)
+    public Grid(int width, int height, int depth, Vector3 origin)
     {
         this.width = width;
         this.height = height;
         this.depth = depth;
-        this.cellSize = cellSize;
         this.origin = origin;
         occupiedCells = new bool[width, height, depth];
     }
