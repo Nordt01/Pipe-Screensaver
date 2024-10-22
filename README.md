@@ -1,6 +1,6 @@
-Documentation:
+**Documentation:**
 
-class Grid:
+__class Grid:__
 The Grid class contains various varables to manage the 3D grid (the area where pipes can be created). It also contains basic function to manage cells inside it.
 
 class Grid Controller:
@@ -9,7 +9,7 @@ This goes on until the path creation runs into a dead end (either it runs out of
 in the path a cylinder is instantiated and scalled over time. This happens for the rest of the points in the path after one and another. If a curve in the path is detected a simple sphere is spawned. After a path is fully
 drawn, a new path must be created and drawn using the process from before. To avoid overcrowding of pipes, after a custom set amount of placed pathes all pathes are deleted and the process beginns from the beginning.
 
-What can be done to optimize the experiance:
+__What can be done to optimize the experiance:__
 1. Currently it looks like every path is centered at one point and doesnt really stretch over the entierty of the room. To combat this we could give the path generation a higher chance to generate its next tile to the front
    or we chage the width of the grid size.
 2. Some pathes are very short. This is because through for example a bad spawn the path creation runs into a dead end. This is espacially noticable at the pathes created later on due to less space. The resolve this problem
