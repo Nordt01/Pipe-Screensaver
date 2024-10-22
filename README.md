@@ -3,7 +3,7 @@
 __class Grid:__
 The Grid class contains various varables to manage the 3D grid (the area where pipes can be created). It also contains basic function to manage cells inside it.
 
-class Grid Controller:
+__class Grid Controller:__
 This class manages how and where the pipes are drawn. It works by choosing a random spawn point. From that point on it looks which filds around that point aren't occupied yet. From those positions is one randomly selected.
 This goes on until the path creation runs into a dead end (either it runs out of bounds or no more fields around the current are avalible). After a path was created the pipes are drawn onto it. Starting at the first point
 in the path a cylinder is instantiated and scalled over time. This happens for the rest of the points in the path after one and another. If a curve in the path is detected a simple sphere is spawned. After a path is fully
