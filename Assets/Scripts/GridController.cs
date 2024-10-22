@@ -17,18 +17,23 @@ public class GridController : MonoBehaviour
     public GameObject pipePrefab;
     public GameObject spherePrefab;
     public GameObject parent;
+    int x, y, z;
 
     public List<List<Vector3Int>> pathPath = new List<List<Vector3Int>>(); // List of path, which saves every path created during runtime
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        x = Random.Range(0, width - 1);
+        y = Random.Range(0, height - 1);
+        z = Random.Range(0, depth - 1);
+
         grid = new Grid(width, height, depth,  transform.position);
 
         List<Vector3Int> path = new List<Vector3Int>();
         pathPath.Add(path);
 
-        createPipePath(new Vector3Int(5, 5, 5)); //Starts path creating and drawing process
+        createPipePath(new Vector3Int(x, y, z)); //Starts path creating and drawing process
     }
 
     void createPipePath(Vector3Int start)
@@ -108,8 +113,6 @@ public class GridController : MonoBehaviour
             }
         }
 
-
-        int x, y, z;
         i = 0;
         for (i = 0; i < 3; i++) 
         { 
