@@ -3,7 +3,6 @@ using UnityEngine;
 public class Grid
 {
     private int width, height, depth;
-    private float cellSize;
     private Vector3 origin;
     public bool[,,] occupiedCells;
 
@@ -34,8 +33,8 @@ public class Grid
 
     public bool IsValidGridPosition(Vector3Int gridPosition)
     {
-        return gridPosition.x >= origin.x && gridPosition.x < width-1 &&
-               gridPosition.y >= origin.y && gridPosition.y < height-1 &&
-               gridPosition.z >= origin.y && gridPosition.z < depth-1;
+        return gridPosition.x >= origin.x && gridPosition.x < width &&
+               gridPosition.y >= origin.y && gridPosition.y < height &&
+               gridPosition.z >= origin.y && gridPosition.z < depth;
     }
 }

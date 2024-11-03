@@ -421,11 +421,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f40bada0df35f8644a333492863f14e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 25
-  height: 20
-  depth: 20
-  maxPaths: 8
-  growDuration: 0.05
+  width: 10
+  height: 10
+  depth: 10
+  maxPipes: 0
+  pipeAmount: 0
+  growDuration: 0.0005
   emissionIntensity: 0.05
   pipePrefab: {fileID: 4780531246135008732, guid: 3311b50ea0c791649bbbc888914ec122, type: 3}
   spherePrefab: {fileID: 5260226236395028540, guid: f07a21f16f0bf244ebaa8d6e504eba78, type: 3}
